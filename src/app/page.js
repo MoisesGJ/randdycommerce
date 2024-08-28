@@ -2,7 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const [products, setProducts] = useState([
@@ -83,6 +84,8 @@ export default function Home() {
 
   const randyAviseRef = useRef(null);
 
+  const router = useRouter();
+
   const handleNextArrow = (e) => {
     e.preventDefault();
     const prevOrder = order.slice();
@@ -130,6 +133,10 @@ export default function Home() {
     }, 500);
   };
 
+  const handleSetLStorage = (currArr) => {
+    localStorage.setItem('cart', JSON.stringify(currArr));
+  };
+
   const handleAddCart = (itemId) => {
     const currProduct = products.find(({ id }) => itemId === id);
     const currShoppingCart = shoppingCart.slice();
@@ -152,6 +159,7 @@ export default function Home() {
     }
 
     setShoppingCart(auxArr);
+    handleSetLStorage(auxArr);
     handleSubTotal(auxArr);
     handleCountItems(auxArr);
 
@@ -210,6 +218,21 @@ export default function Home() {
     }
   };
 
+  const handlePayment = () => {
+    router.push('/payment');
+  };
+
+  useEffect(() => {
+    const existsCart = localStorage.getItem('cart');
+
+    if (existsCart) {
+      const saveData = JSON.parse(existsCart);
+      setShoppingCart(saveData);
+      handleSubTotal(saveData);
+      handleCountItems(saveData);
+    }
+  }, []);
+
   return (
     <div className="h-[100dvh] w-screen overflow-hidden flex flex-col select-none">
       {viewShoppingCart && (
@@ -261,6 +284,8 @@ export default function Home() {
         subTotal={subTotal}
         setSub={handleSubTotal}
         setCount={handleCountItems}
+        setLocalStorage={handleSetLStorage}
+        navigatePayment={handlePayment}
       />
 
       <main className="grow px-2 sm:p-5 flex items-center overflow-hidden">
@@ -399,6 +424,8 @@ function ShoppingCart({
   subTotal,
   setSub,
   setCount,
+  setLocalStorage,
+  navigatePayment,
 }) {
   const handleRemoveProductToCart = (item) => {
     const currCart = items.slice();
@@ -409,6 +436,8 @@ function ShoppingCart({
     }
 
     setItems(currCart);
+
+    setLocalStorage(currCart);
 
     if (currCart.length === 0) setView(false);
 
@@ -435,6 +464,8 @@ function ShoppingCart({
       setItems(currCart);
 
       setItems(currCart);
+
+      setLocalStorage(currCart);
 
       if (currCart.length === 0) setView(false);
 
@@ -566,7 +597,9 @@ function ShoppingCart({
               Serían $<u>{subTotal}</u>, por favor
             </span>
           </div>
-          <button className="font-lucky text-xl bg-dgreen p-3 rounded-full absolute end-3 bottom-3 hover:animate-wiggle-more hover:animate-infinite">
+          <button
+            className="font-lucky text-xl bg-dgreen p-3 rounded-full absolute end-3 bottom-3 hover:animate-wiggle-more hover:animate-infinite"
+            onClick={navigatePayment}>
             Ir a pagar
           </button>
         </div>
