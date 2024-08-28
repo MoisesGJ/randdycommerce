@@ -1,0 +1,46 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        mont: ['var(--font-mont)'],
+        lucky: ['var(--font-lucky)'],
+        ram: ['var(--font-ram)'],
+      },
+      colors: {
+        oldwhite: '#f6ead7',
+        lgreen: '#44aa68',
+        dgreen: '#21643f',
+        dorange: '#e56c25',
+        lorange: '#ff9d30',
+        pcyan: '#00b8f1',
+        agreen: '#95b334',
+        natL: '#1aaf19',
+        langL: '#e2ec0a',
+        mathL: '#fb2425',
+        artL: '#cb1ba1',
+        lifeL: '#7813bd',
+        worldL: '#7645fa',
+        nerdL: '#1b19d4',
+        sportL: '#0491e1',
+        natD: '#2E7D32',
+        langD: '#bac408',
+        mathD: '#c20a0a',
+        artD: '#801266',
+        lifeD: '#510f7d',
+        worldD: '#462896',
+        nerdD: '#3107a1',
+        sportD: '#0374b5',
+        grey: '#D9D9D9',
+        peach: '#FBCF8E',
+        cream: '#F7E9D8',
+      },
+    },
+  },
+  plugins: [require('tailwindcss-animated')],
+};
