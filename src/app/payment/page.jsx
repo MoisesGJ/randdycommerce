@@ -3,11 +3,16 @@
 import { useUser, SignOutButton } from '@clerk/nextjs';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 
+import getStripe from '../_lib/stripe';
+import { getAddress, createAddress, createCheckoutSession } from './actions';
+
 export default function HomePage() {
+  const [hasAddress, setHasAddress] = useState(null);
+  const [messageErrors, setMessageErrors] = useState(null);
   const { isLoaded, isSignedIn, user } = useUser();
   const router = useRouter();
 
@@ -17,16 +22,52 @@ export default function HomePage() {
     }
   }, [isLoaded, isSignedIn, router]);
 
+  const createError = (error) => {
+    setMessageErrors(error);
+    setTimeout(() => {
+      setMessageErrors(null);
+    }, 3000);
+  };
+
+  useEffect(() => {
+    if (isSignedIn && user?.primaryEmailAddress?.emailAddress) {
+      const checkUserAddress = async () => {
+        try {
+          const userHasAddress = await getAddress(
+            user.primaryEmailAddress.emailAddress
+          );
+          setHasAddress(userHasAddress ? true : false);
+        } catch (error) {
+          console.error('Error fetching address:', error);
+          setMessageErrors('Error al validar la dirección');
+        }
+      };
+
+      checkUserAddress();
+    }
+  }, [isSignedIn, user?.primaryEmailAddress?.emailAddress]);
+
   if (!isLoaded || !isSignedIn) {
     return <div>Loading...</div>;
   }
 
-  const handleOnSubmit = (data) => {
-    console.log(data);
+  const handleOnSubmit = async (data) => {
+    const isAddressCreated = await createAddress(
+      user.primaryEmailAddress.emailAddress,
+      data
+    );
+
+    if (!isAddressCreated.error) setHasAddress(true);
+    else createError(isAddressCreated.error);
   };
 
   return (
     <div className="h-[100dvh] w-screen bg-dgreen flex flex-col items-center justify-end pt-20 pb-5 md:justify-center md:pb-0 md:pt-0 text-white">
+      {messageErrors && (
+        <span className="absolute top-5 bg-red-600 p-5 px-10 rounded-full">
+          {messageErrors}
+        </span>
+      )}
       <div className="absolute top-2 start-0 w-screen flex justify-between px-3 md:px-12">
         <button
           className="hover:scale-110 hover:font-bold hover:text-lorange transition-colors duration-300"
@@ -61,11 +102,52 @@ export default function HomePage() {
         </div>
       </div>
       <main className="bg-oldwhite w-11/12 max-w-[900px] h-full md:h-[500px] rounded-2xl p-5 flex justify-center items-center">
-        <Address
-          displayName={user.fullName}
-          onSubmit={handleOnSubmit}
-        />
+        {hasAddress === null && <Spinner />}
+        {hasAddress === false && (
+          <Address
+            displayName={user.fullName}
+            onSubmit={handleOnSubmit}
+          />
+        )}
+        {hasAddress === true && <Payment />}
       </main>
+    </div>
+  );
+}
+
+function Payment() {
+  const [loading, setLoading] = useState(false);
+
+  const handleCheckout = async () => {
+    try {
+      setLoading(true);
+
+      const items = [
+        { name: 'Item 1', amount: 1000, quantity: 1 },
+        { name: 'Item 2', amount: 2000, quantity: 2 },
+      ];
+
+      const sessionId = await createCheckoutSession(items);
+      const stripe = await getStripe();
+
+      if (stripe) {
+        await stripe.redirectToCheckout({ sessionId });
+      }
+    } catch (error) {
+      console.error('Error during checkout:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <button
+        role="link"
+        onClick={handleCheckout}
+        disabled={loading}>
+        {loading ? 'Loading...' : 'Checkout'}
+      </button>
     </div>
   );
 }
@@ -197,5 +279,28 @@ function Address({ displayName, onSubmit }) {
         Pagar
       </button>
     </form>
+  );
+}
+
+function Spinner() {
+  return (
+    <div role="status">
+      <svg
+        aria-hidden="true"
+        className="w-8 h-8 animate-spin text-gray-400 fill-dgreen"
+        viewBox="0 0 100 101"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+          fill="currentColor"
+        />
+        <path
+          d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+          fill="currentFill"
+        />
+      </svg>
+      <span className="sr-only">Loading...</span>
+    </div>
   );
 }
