@@ -1,3 +1,5 @@
+import { ClerkProvider } from '@clerk/nextjs';
+
 import {
   Montserrat_Alternates,
   Luckiest_Guy,
@@ -27,9 +29,9 @@ const rammetto = Rammetto_One({
 });
 
 export const metadata = {
-  title: 'Randy | Ecommerce',
-  description:
-    'Este es un ecommerce para apoyar la creación de sandías en randomlandia.com.',
+  metadataBase: new URL('https://shopping.randomlandia.com/'),
+  title: 'Randdy | Ecommerce',
+  description: 'El ecommerce de Ranndy para ayudar a los desarrolladores.',
 };
 
 export default function RootLayout({ children }) {
@@ -38,7 +40,9 @@ export default function RootLayout({ children }) {
       lang="es"
       className={`${montserrat.variable} ${luckiest.variable} ${rammetto.variable} font-mont text-slate-900`}
       suppressHydrationWarning={true}>
-      <body>{children}</body>
+      <ClerkProvider>
+        <body>{children}</body>
+      </ClerkProvider>
     </html>
   );
 }

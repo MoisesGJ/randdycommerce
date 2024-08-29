@@ -8,6 +8,12 @@ const nextConfig = {
         port: '',
         pathname: '/ecommerce/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };
