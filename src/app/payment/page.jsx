@@ -1,16 +1,17 @@
-'use client';
+"use client";
+import Luz from "@/components/Luz";
+import { useUser, SignOutButton } from "@clerk/nextjs";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-import { useUser, SignOutButton } from '@clerk/nextjs';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useForm } from "react-hook-form";
 
-import { useForm } from 'react-hook-form';
-
-import getStripe from '../_lib/stripe';
-import { getAddress, createAddress, createCheckoutSession } from './actions';
+import getStripe from "../_lib/stripe";
+import { getAddress, createAddress, createCheckoutSession } from "./actions";
 
 export default function HomePage() {
+  const [animacionActiva, setAnimacionActiva] = useState(true);
   const [hasAddress, setHasAddress] = useState(null);
   const [messageErrors, setMessageErrors] = useState(null);
   const { isLoaded, isSignedIn, user } = useUser();
@@ -18,7 +19,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
-      router.push('/sign-in');
+      router.push("/sign-in");
     }
   }, [isLoaded, isSignedIn, router]);
 
@@ -38,8 +39,8 @@ export default function HomePage() {
           );
           setHasAddress(userHasAddress ? true : false);
         } catch (error) {
-          console.error('Error fetching address:', error);
-          setMessageErrors('Error al validar la dirección');
+          console.error("Error fetching address:", error);
+          setMessageErrors("Error al validar la dirección");
         }
       };
 
@@ -62,55 +63,66 @@ export default function HomePage() {
   };
 
   return (
-    <div className="h-[100dvh] w-screen bg-dgreen flex flex-col items-center justify-end pt-20 pb-5 md:justify-center md:pb-0 md:pt-0 text-white">
-      {messageErrors && (
-        <span className="absolute top-5 bg-red-600 p-5 px-10 rounded-full">
-          {messageErrors}
-        </span>
-      )}
-      <div className="absolute top-2 start-0 w-screen flex justify-between px-3 md:px-12">
-        <button
-          className="hover:scale-110 hover:font-bold hover:text-lorange transition-colors duration-300"
-          onClick={() => router.push('/')}>
-          Regresar a comprar
-        </button>
-        <div className="flex justify-end items-center relative group/session">
-          {user.hasImage && (
-            <Image
-              src={user.imageUrl}
-              width={40}
-              height={40}
-              className="rounded-full me-2"
-              alt={`Imagen de usuario de ${user.firstName}`}
-            />
+    <div className=" flex flex-col gap-3.5 items-center justify-center  bg-cover bg-left-bottom lg:bg-center  bg-no-repeat  bg-[url('/fondo.png')] ">
+      <div className="min-h-screen w-screen Alex flex-col gap-3.5 items-center justify-center bg-transparent ">
+        <Luz
+          className="h-96 relative overflow-hidden"
+          active={animacionActiva}
+        ></Luz>
+        <div className="absoute z-50">
+          {messageErrors && (
+            <span className="absolute top-5 bg-red-600 p-5 px-10 rounded-full">
+              {messageErrors}
+            </span>
           )}
-          <span>
-            ¡Hola, <b>{user.firstName}</b>!
-          </span>
-          <SignOutButton>
-            <button className="absolute -bottom-3 text-sm md:hidden">
-              Cerrar sesión
+          <div className="absolute z-50 top-2 start-0 w-screen flex justify-between px-3 md:px-12">
+            <button
+              className="hover:scale-110 font-extrabold text-2xl  hover:font-bold hover:text-lorange transition-colors duration-300"
+              onClick={() => router.push("/")}
+            >
+              Regresar a comprar
             </button>
-          </SignOutButton>
-          <div className="hidden md:group-hover/session:block absolute end-0 top-full bg-gray-100 text-dorange p-4 rounded-2xl rounded-tl-none">
-            <SignOutButton>
-              <button className="font-normal hover:font-semibold hover:text-dorange transition-colors duration-300">
-                Cerrar sesión
-              </button>
-            </SignOutButton>
+            <div className="flex absolute z-50 justify-end items-center relative group/session">
+              {user.hasImage && (
+                <Image
+                  src={user.imageUrl}
+                  width={40}
+                  height={40}
+                  className="rounded-full me-2"
+                  alt={`Imagen de usuario de ${user.firstName}`}
+                />
+              )}
+              <span className="font-extrabold text-2xl ">
+                ¡Hola, <b>{user.firstName}</b>!
+              </span>
+              <SignOutButton>
+                <button className="absolute -bottom-3 text-sm md:hidden">
+                  Cerrar sesión
+                </button>
+              </SignOutButton>
+              <div className="hidden md:group-hover/session:block absolute end-0 top-full bg-gray-100 text-dorange p-4 rounded-2xl rounded-tl-none">
+                <SignOutButton>
+                  <button className="font-normal hover:font-semibold hover:text-dorange transition-colors duration-300">
+                    Cerrar sesión
+                  </button>
+                </SignOutButton>
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-center items-center min-h-screen">
+            <main className="absolute z-50 top-40 bg-oldwhite/50 max-w-[900px] h-full md:h-[500px] rounded-[40px] p-5 flex justify-center items-center">
+              {hasAddress === null && <Spinner />}
+              {hasAddress === false && (
+                <Address
+                  displayName={user.fullName}
+                  onSubmit={handleOnSubmit}
+                />
+              )}
+              {hasAddress === true && <Payment />}
+            </main>
           </div>
         </div>
       </div>
-      <main className="bg-oldwhite w-11/12 max-w-[900px] h-full md:h-[500px] rounded-2xl p-5 flex justify-center items-center">
-        {hasAddress === null && <Spinner />}
-        {hasAddress === false && (
-          <Address
-            displayName={user.fullName}
-            onSubmit={handleOnSubmit}
-          />
-        )}
-        {hasAddress === true && <Payment />}
-      </main>
     </div>
   );
 }
@@ -123,8 +135,8 @@ function Payment() {
       setLoading(true);
 
       const items = [
-        { name: 'Item 1', amount: 1000, quantity: 1 },
-        { name: 'Item 2', amount: 2000, quantity: 2 },
+        { name: "Item 1", amount: 1000, quantity: 1 },
+        { name: "Item 2", amount: 2000, quantity: 2 },
       ];
 
       const sessionId = await createCheckoutSession(items);
@@ -134,7 +146,7 @@ function Payment() {
         await stripe.redirectToCheckout({ sessionId });
       }
     } catch (error) {
-      console.error('Error during checkout:', error);
+      console.error("Error during checkout:", error);
     } finally {
       setLoading(false);
     }
@@ -142,11 +154,8 @@ function Payment() {
 
   return (
     <div>
-      <button
-        role="link"
-        onClick={handleCheckout}
-        disabled={loading}>
-        {loading ? 'Loading...' : 'Checkout'}
+      <button role="link" onClick={handleCheckout} disabled={loading}>
+        {loading ? "Loading..." : "Checkout"}
       </button>
     </div>
   );
@@ -162,25 +171,24 @@ function Address({ displayName, onSubmit }) {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="w-full h-full text-dgreen p-3 flex flex-col">
+      className="w-full h-full text-dgreen p-3 flex flex-col"
+    >
       <h1 className="text-2xl font-bold mb-4">
         ¿A dónde enviaremos los productos?
       </h1>
 
       <div className="grow grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 overflow-auto">
         <div>
-          <label
-            htmlFor="name"
-            className="block text-lg font-medium mb-1">
+          <label htmlFor="name" className="block text-lg font-medium mb-1">
             Nombre
           </label>
           <input
             id="name"
             type="text"
             defaultValue={displayName}
-            {...register('name', { required: 'El nombre es obligatorio' })}
-            className={`w-full p-2 border rounded ${
-              errors.name ? 'border-red-500' : 'border-gray-300'
+            {...register("name", { required: "El nombre es obligatorio" })}
+            className={`w-full p-2 border rounded-[40px] ${
+              errors.name ? "border-red-500" : "border-gray-300"
             }`}
           />
           {errors.name && (
@@ -189,19 +197,17 @@ function Address({ displayName, onSubmit }) {
         </div>
 
         <div>
-          <label
-            htmlFor="address"
-            className="block text-lg font-medium mb-1">
+          <label htmlFor="address" className="block text-lg font-medium mb-1">
             Dirección
           </label>
           <input
             id="address"
             type="text"
-            {...register('address', {
-              required: 'La dirección es obligatoria',
+            {...register("address", {
+              required: "La dirección es obligatoria",
             })}
-            className={`w-full p-2 border rounded ${
-              errors.address ? 'border-red-500' : 'border-gray-300'
+            className={`w-full p-2 border rounded-[40px] ${
+              errors.address ? "border-red-500" : "border-gray-300"
             }`}
           />
           {errors.address && (
@@ -212,17 +218,15 @@ function Address({ displayName, onSubmit }) {
         </div>
 
         <div>
-          <label
-            htmlFor="city"
-            className="block text-lg font-medium mb-1">
+          <label htmlFor="city" className="block text-lg font-medium mb-1">
             Ciudad
           </label>
           <input
             id="city"
             type="text"
-            {...register('city', { required: 'La ciudad es obligatoria' })}
-            className={`w-full p-2 border rounded ${
-              errors.city ? 'border-red-500' : 'border-gray-300'
+            {...register("city", { required: "La ciudad es obligatoria" })}
+            className={`w-full p-2 border rounded-[40px] ${
+              errors.city ? "border-red-500" : "border-gray-300"
             }`}
           />
           {errors.city && (
@@ -233,21 +237,22 @@ function Address({ displayName, onSubmit }) {
         <div>
           <label
             htmlFor="postalCode"
-            className="block text-lg font-medium mb-1">
+            className="block text-lg font-medium mb-1"
+          >
             Código Postal
           </label>
           <input
             id="postalCode"
             type="text"
-            {...register('postalCode', {
-              required: 'El código postal es obligatorio',
+            {...register("postalCode", {
+              required: "El código postal es obligatorio",
               pattern: {
                 value: /^[0-9]+$/,
-                message: 'El código postal debe ser solo números',
+                message: "El código postal debe ser solo números",
               },
             })}
-            className={`w-full p-2 border rounded ${
-              errors.postalCode ? 'border-red-500' : 'border-gray-300'
+            className={`w-full p-2 border rounded-[40px] ${
+              errors.postalCode ? "border-red-500" : "border-gray-300"
             }`}
           />
           {errors.postalCode && (
@@ -258,9 +263,7 @@ function Address({ displayName, onSubmit }) {
         </div>
 
         <div>
-          <label
-            htmlFor="country"
-            className="block text-lg font-medium mb-1">
+          <label htmlFor="country" className="block text-lg font-medium mb-1">
             País
           </label>
           <input
@@ -268,14 +271,15 @@ function Address({ displayName, onSubmit }) {
             type="text"
             defaultValue="México"
             readOnly
-            className="w-full p-2 border rounded bg-gray-100 cursor-not-allowed font-bold"
+            className="w-full p-2 border rounded-[40px] bg-gray-100 cursor-not-allowed font-bold"
           />
         </div>
       </div>
 
       <button
         type="submit"
-        className="bg-dgreen text-white px-4 py-2 rounded hover:bg-dgreen-dark transition-colors">
+        className="m-auto h-10 w-40 md:w-60  hover:shadow-xl hover:translate-y-3 hover:translate-x-2 hover:shadow-orange-300 bg-agreen font-lucky items-center text-center justify-center rounded-3xl  flex shadow-amber-100 shadow-lg"
+      >
         Pagar
       </button>
     </form>
@@ -290,7 +294,8 @@ function Spinner() {
         className="w-8 h-8 animate-spin text-gray-400 fill-dgreen"
         viewBox="0 0 100 101"
         fill="none"
-        xmlns="http://www.w3.org/2000/svg">
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <path
           d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
           fill="currentColor"
