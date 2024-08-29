@@ -1,12 +1,11 @@
 'use client';
 
+import ShoppingCart from '@/components/ShoppingCart';
+import Luz from '@/components/Luz';
+import BurbujaAdaptable from '@/components/Burbujaadaptable';
 import Image from 'next/image';
 import Link from 'next/link';
-
-import ShoppingCart from '@/components/ShoppingCart';
-
-import { useEffect, useRef, useState } from 'react';
-
+import { useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Products } from './actions';
@@ -138,40 +137,7 @@ export default function Home() {
     setCountItems(countItems);
   };
 
-  const handleRemoveRandy = async () => {
-    if (randyAviseRef.current) {
-      randyAviseRef.current.classList.remove(
-        'transition-opacity',
-        'transition-transform',
-        'duration-1000',
-        'opacity-0',
-        'translate-x-full'
-      );
-      randyAviseRef.current.classList.add(
-        'transition-opacity',
-        'transition-transform',
-        'duration-1000',
-        'opacity-100',
-        'translate-x-0'
-      );
-
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          randyAviseRef.current.classList.add(
-            'transition-opacity',
-            'transition-transform',
-            'duration-1000',
-            'opacity-0',
-            'translate-x-full'
-          );
-
-          setTimeout(() => {
-            resolve();
-          }, 300);
-        }, 3500);
-      });
-    }
-  };
+  const handleRemoveRandy = async () => {};
 
   const handlePayment = () => {
     router.push('/payment');
@@ -189,25 +155,35 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="h-[100dvh] w-screen overflow-hidden flex flex-col select-none">
+    <div className="h-[100dvh] w-screen bg-[url('/fondo.png')]  max-h-screen  bg-cover bg-left-bottom lg:bg-center  bg-no-repeat  overflow-hidden flex flex-col select-none">
       {viewShoppingCart && (
         <div
           className="fixed top-0 left-0 w-full h-full bg-black/50 z-30"
           onClick={() => setViewShoppingCart(false)}
         />
       )}
-      <header className="bg-dorange w-screen h-36 flex flex-col justify-center items-start ps-5  sm:items-center md:gap-3 relative">
-        <Image
-          src="https://cdn.randomlandia.com/ecommerce/logoLarge.svg"
-          width={300}
-          height={100}
-          alt="Logo largo de randomlandia"
-          className="md:scale-150 animate-fade-left"
-        />
-        <h2 className="font-lucky text-white text-xl animate-fade-right hover:animate-jump">
-          Los mejores productos
-        </h2>
-        <div className="absolute bottom-3 sm:top-1/2 sm:transition sm:-translate-y-1/2 end-8 ">
+      <header className="header-tienda h-32 w-screen flex flex-col justify-center items-start ps-5 sm:items-center md:gap-3 relative">
+        <div className="holanes">
+          <div className="holan"></div>
+          <div className="holan"></div>
+          <div className="holan"></div>
+          <div className="holan"></div>
+          <div className="holan"></div>
+          <div className="holan"></div>
+        </div>
+        <div className="flex">
+          <Image
+            src="https://cdn.randomlandia.com/ecommerce/logoLarge.svg"
+            width={300}
+            height={100}
+            alt="Logo largo de randomlandia"
+            className="md:scale-150 pb-6 animate-fade-left"
+          />
+          <h2 className="font-lucky pl-10 text-green-900 text-xl animate-fade-right hover:animate-jump">
+            Los mejores productos
+          </h2>
+        </div>
+        <div className="absolute bottom-3 sm:top-1/2 sm:transition sm:-translate-y-1/2 end-8">
           {shoppingCart.length > 0 && (
             <>
               <button
@@ -228,7 +204,6 @@ export default function Home() {
             </>
           )}
         </div>
-        <RandyAvise randyRef={randyAviseRef} />
       </header>
 
       <ShoppingCart
@@ -243,7 +218,8 @@ export default function Home() {
         navigatePayment={handlePayment}
       />
 
-      <main className="grow px-2 sm:p-5 flex items-center overflow-hidden">
+      <main className="grow px-2 sm:p-5 flex items-center overflow-hidden relative">
+        <RandyAvise randyRef={randyAviseRef} />
         <button
           className="size-8 md:size-10"
           onClick={(e) => handlePrevArrow(e)}>
@@ -268,60 +244,71 @@ export default function Home() {
               index
             ) => {
               return (
-                <div
-                  key={`product-${id}`}
-                  className={`${index === 0 && 'hidden md:flex'} ${
-                    sliceStart ? 'animate-fade-right' : ''
-                  } ${
-                    index === 1 && 'h-[400px] w-[300px]'
-                  } hover:scale-105 h-[300px] w-56 bg-gray-400/20 rounded-2xl  transition-transform ease-in-out relative font-lucky p-3 ${
-                    index === 2 && 'hidden lg:flex'
-                  } ${
-                    sliceEnd ? 'animate-fade-left' : ''
-                  } animate-duration-200 group`}>
-                  <Image
-                    src={images[0]}
-                    height={200}
-                    width={200}
-                    alt={name}
-                    className="absolute top-1/2 start-1/2 transition -translate-x-1/2 -translate-y-1/2 z-0"
-                  />
-                  <h2 className="text-xl text-center w-full truncate text-dgreen">
-                    {name}
-                  </h2>
-                  {shoppingCart.some((product) => product.id === id) && (
-                    <>
-                      <span className="text-transparent bg-clip-text bg-dorange text-4xl text-center absolute end-1/2 top-1/2 transition translate-x-1/2 -translate-y-1/2">
-                        ¡Agregado al carrito!
-                      </span>
-                    </>
-                  )}
-                  <span
-                    className={`absolute bottom-3 start-1/2 transition -translate-x-1/2 text-dorange ${
-                      index === 1 ? 'text-4xl' : 'text-2xl'
-                    }`}>
-                    $ {price}
-                  </span>
-                  <button
-                    className="absolute start-5 bottom-3 group-hover:animate-wiggle-more group-hover:animate-infinite"
-                    onClick={() => handleAddCart(id)}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      className="size-10 fill-dorange group-hover:scale-[1.5]">
-                      <path
-                        fillRule="evenodd"
-                        d="M7.5 6v.75H5.513c-.96 0-1.764.724-1.865 1.679l-1.263 12A1.875 1.875 0 0 0 4.25 22.5h15.5a1.875 1.875 0 0 0 1.865-2.071l-1.263-12a1.875 1.875 0 0 0-1.865-1.679H16.5V6a4.5 4.5 0 1 0-9 0ZM12 3a3 3 0 0 0-3 3v.75h6V6a3 3 0 0 0-3-3Zm-3 8.25a3 3 0 1 0 6 0v-.75a.75.75 0 0 1 1.5 0v.75a4.5 4.5 0 1 1-9 0v-.75a.75.75 0 0 1 1.5 0v.75Z"
-                        clipRule="evenodd"
+                <div>
+                  <BurbujaAdaptable
+                    id="burbuja2"
+                    className="h-[500px] w-[500px] ">
+                    <div
+                      key={`product-${id}`}
+                      className={`${index === 0 && 'hidden md:flex'} ${
+                        sliceStart ? 'animate-fade-right' : ''
+                      } ${
+                        index === 1 && 'h-[400px] w-[300px]'
+                      } hover:scale-105 h-[300px] w-56   rounded-2xl  transition-transform ease-in-out relative font-lucky p-3 ${
+                        index === 2 && 'hidden lg:flex'
+                      } ${
+                        sliceEnd ? 'animate-fade-left' : ''
+                      } animate-duration-200 group`}>
+                      <Image
+                        src={images[0]}
+                        height={200}
+                        width={200}
+                        alt={name}
+                        className="absolute top-1/2 start-1/2 transition -translate-x-1/2 -translate-y-1/2 z-0"
                       />
-                    </svg>
-                  </button>
+
+                      <h2 className="text-4xl text-center w-full text-white">
+                        {name}
+                      </h2>
+                      {shoppingCart.some((product) => product.id === id) && (
+                        <>
+                          <div className="absolute end-1/2 top-1/2 transition translate-x-1/2 -translate-y-1/2 backdrop-blur-sm h-36 w-36 rounded-full"></div>
+                          <span className="text-transparent bg-clip-text bg-dorange text-2xl text-center absolute end-1/2 top-1/2 transition translate-x-1/2 -translate-y-1/2 z-50">
+                            ¡Agregado al carrito!
+                          </span>
+                        </>
+                      )}
+                      <span
+                        className={`absolute bottom-3 start-1/2 transition -translate-x-1/2 text-dorange ${
+                          index === 1 ? 'text-4xl' : 'text-2xl'
+                        }`}>
+                        $ {price}
+                      </span>
+                      <button
+                        className="absolute start-5 bottom-3 group-hover:animate-wiggle-more group-hover:animate-infinite"
+                        onClick={() => handleAddCart(id)}>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          className={`fill-dorange group-hover:scale-[1.5] ${
+                            index === 1 ? 'size-14' : 'size-12'
+                          }`}>
+                          <path
+                            fillRule="evenodd"
+                            d="M7.5 6v.75H5.513c-.96 0-1.764.724-1.865 1.679l-1.263 12A1.875 1.875 0 0 0 4.25 22.5h15.5a1.875 1.875 0 0 0 1.865-2.071l-1.263-12a1.875 1.875 0 0 0-1.865-1.679H16.5V6a4.5 4.5 0 1 0-9 0ZM12 3a3 3 0 0 0-3 3v.75h6V6a3 3 0 0 0-3-3Zm-3 8.25a3 3 0 1 0 6 0v-.75a.75.75 0 0 1 1.5 0v.75a4.5 4.5 0 1 1-9 0v-.75a.75.75 0 0 1 1.5 0v.75Z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </BurbujaAdaptable>
                 </div>
               );
             }
           )}
         </section>
+
         <button
           className="size-8 md:size-10"
           onClick={(e) => handleNextArrow(e)}>
@@ -357,7 +344,8 @@ function RandyAvise({ randyRef }) {
   return (
     <div
       ref={randyRef}
-      className="translate-x-full h-auto w-auto absolute -end-10 -bottom-36 flex flex-col-reverse justify-end items-center -rotate-90">
+      className="absolute z-40 translate-x-full pr-3 h-auto w-auto -end-10 
+       flex flex-col-reverse justify-end items-center -rotate-90">
       <Image
         src="https://cdn.randomlandia.com/ecommerce/randy-avise.webp"
         width={56}
