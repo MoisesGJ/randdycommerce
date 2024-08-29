@@ -8,6 +8,7 @@ import {
 
 import SendEmail from '../_lib/resend/send-email';
 import Template from '../_lib/resend/templates/order-html';
+import { Products } from '../actions';
 
 export async function getAddress(email) {
   const hasAddress = await getUserAddress(email);
@@ -64,7 +65,7 @@ const calculatePay = (products, items) => {
       name: currProd.name,
       amount: currProd.price * 100,
       quantity: count,
-      image: currProd.image[0],
+      image: currProd.images[0],
       price: currProd.price,
     };
   });
@@ -79,26 +80,9 @@ const calculatePay = (products, items) => {
 
 export async function createCheckoutSession(items, email) {
   try {
-    const prb = [
-      {
-        id: '2',
-        name: 'prb1',
-        price: 200,
-        image: [
-          'https://th.bing.com/th/id/R.62325205054ee42cbd441c7036a7e3ec?rik=RHdJrVUP%2b%2b8klA&pid=ImgRaw&r=0',
-        ],
-      },
-      {
-        id: '3',
-        name: 'prb2',
-        price: 200,
-        image: [
-          'https://th.bing.com/th/id/R.62325205054ee42cbd441c7036a7e3ec?rik=RHdJrVUP%2b%2b8klA&pid=ImgRaw&r=0',
-        ],
-      },
-    ];
+    const products = await Products();
 
-    const payload = calculatePay(prb, items);
+    const payload = calculatePay(products, items);
 
     if (payload) {
       const response = await fetch(

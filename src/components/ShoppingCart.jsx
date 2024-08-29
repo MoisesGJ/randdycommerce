@@ -112,7 +112,7 @@ export default function ShoppingCart({
                 key={`cart-${id}`}
                 className="items-center space-x-3 relative grid grid-cols-10 group/item hover:bg-slate-100/5">
                 <Image
-                  src={images[0]}
+                  src={images[1]}
                   height={100}
                   width={100}
                   alt={name}

@@ -6,76 +6,14 @@ import Link from 'next/link';
 import ShoppingCart from '@/components/ShoppingCart';
 
 import { useEffect, useRef, useState } from 'react';
+
 import { useRouter } from 'next/navigation';
 
+import { Products } from './actions';
+
 export default function Home() {
-  const [products, setProducts] = useState([
-    {
-      id: '1',
-      name: 'Playera de raya',
-      description: 'Ola',
-      price: 200,
-      images: ['/prb.png'],
-      category: 'a',
-    },
-    {
-      id: '2',
-      name: 'Ola2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-      description: 'Ola',
-      price: 200,
-      images: ['/prb.png'],
-      category: 'a',
-    },
-    {
-      id: '3',
-      name: 'Ola3',
-      description: 'Ola',
-      price: 200,
-      images: ['/prb.png'],
-      category: 'a',
-    },
-    {
-      id: '4',
-      name: 'Ola4',
-      description: 'Ola',
-      price: 200,
-      images: ['/prb.png'],
-      category: 'a',
-    },
-    {
-      id: '5',
-      name: 'Ola5',
-      description: 'Ola',
-      price: 200,
-      images: ['/prb.png'],
-      category: 'a',
-    },
-    {
-      id: '6',
-      name: 'Ola6',
-      description: 'Ola',
-      price: 200,
-      images: ['/prb.png'],
-      category: 'a',
-    },
-    {
-      id: '7',
-      name: 'Ola7',
-      description: 'Ola',
-      price: 200,
-      images: ['/prb.png'],
-      category: 'a',
-    },
-    {
-      id: '8',
-      name: 'Ola8',
-      description: 'Ola',
-      price: 200,
-      images: ['/prb.png'],
-      category: 'a',
-    },
-  ]);
-  const [order, setOrder] = useState(() => products.slice(0, 3));
+  const [products, setProducts] = useState([]);
+  const [order, setOrder] = useState([]);
   const [shoppingCart, setShoppingCart] = useState([]);
 
   const [sliceStart, setSliceStart] = useState(false);
@@ -88,6 +26,20 @@ export default function Home() {
   const randyAviseRef = useRef(null);
 
   const router = useRouter();
+
+  useEffect(() => {
+    const getProducts = async () => {
+      const productsFetch = await Products();
+
+      setProducts(productsFetch);
+    };
+
+    getProducts();
+  }, []);
+
+  useEffect(() => {
+    setOrder(() => products.slice(0, 3));
+  }, [products]);
 
   const handleNextArrow = (e) => {
     e.preventDefault();
@@ -329,10 +281,10 @@ export default function Home() {
                   } animate-duration-200 group`}>
                   <Image
                     src={images[0]}
-                    height={400}
-                    width={400}
+                    height={200}
+                    width={200}
                     alt={name}
-                    className="absolute top-0 start-0 aspect-square h-full z-0"
+                    className="absolute top-1/2 start-1/2 transition -translate-x-1/2 -translate-y-1/2 z-0"
                   />
                   <h2 className="text-xl text-center w-full truncate text-dgreen">
                     {name}

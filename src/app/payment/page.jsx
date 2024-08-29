@@ -303,17 +303,17 @@ function Cart({
               className="items-center space-x-3 relative grid grid-cols-10 group/item md:rounded-3xl md:hover:bg-dorange/50 md:hover:text-white md:hover:font-bold">
               <div className="col-span-1 group relative">
                 <Image
-                  src={images[0]}
+                  src={images[1]}
                   height={100}
                   width={100}
                   alt={name}
                 />
                 <Image
-                  src={images[0]}
+                  src={images[1]}
                   height={100}
                   width={100}
                   alt={name}
-                  className="hidden group-hover:block absolute top-0 scale-[2]"
+                  className="hidden group-hover:block absolute top-0 scale-[1.5]"
                 />
               </div>
 

@@ -50,6 +50,24 @@ export async function updateUserAddress(email, address) {
   }
 }
 
+export async function getProducts() {
+  const { db } = await connectToDatabase();
+
+  try {
+    const products = await db.collection('products').find().toArray();
+
+    const plainProducts = products.map((product) => ({
+      ...product,
+      id: product._id.toString(),
+    }));
+
+    return plainProducts;
+  } catch (error) {
+    console.error('Failed to get products', error);
+    throw error;
+  }
+}
+
 export async function createOrder(email, items, totalAmount, order) {
   const { db } = await connectToDatabase();
 
