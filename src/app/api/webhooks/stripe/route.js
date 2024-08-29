@@ -1,37 +1,44 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { buffer } from 'micro';
+
+import SendEmail from '@/app/_lib/resend/send-email';
+import Template from '@/app/_lib/resend/templates/shop-html';
+import { updateOrderStatus } from '@/app/_lib/mongo/adapter';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(req) {
-  const sig = req.headers['stripe-signature'];
+  const payload = await req.text();
+  const signature = req.headers.get('stripe-signature');
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
-  const buf = await buffer(req);
+
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(buf.toString(), sig, secret);
+    event = stripe.webhooks.constructEvent(payload, signature, secret);
   } catch (err) {
-    console.error('Webhook error:', err.message);
-    return NextResponse.json({ error: 'Webhook error' }, { status: 400 });
+    console.error(err.message);
+    return NextResponse.json({ message: err.message }, { status: 400 });
   }
 
   switch (event.type) {
     case 'checkout.session.completed':
       const session = event.data.object;
-      console.log('Payment success:', session);
+      const user = await updateOrderStatus(session.id, 'paid');
+
+      if (user) {
+        await SendEmail(
+          [user.email],
+          '¡Gracias por tu compra!',
+          Template(user.id)
+        );
+      }
+
       break;
+
     default:
       console.warn(`Unhandled event type: ${event.type}`);
   }
 
   return NextResponse.json({ received: true });
 }
-
-export const config = {
-  api: {
-    bodyParser: false,
-    externalResolver: true,
-  },
-};

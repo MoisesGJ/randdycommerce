@@ -10,7 +10,7 @@ import { useForm } from 'react-hook-form';
 import getStripe from '../_lib/stripe';
 import { getAddress, createAddress, createCheckoutSession } from './actions';
 
-export default function HomePage() {
+export default function PaymentPage() {
   const [hasAddress, setHasAddress] = useState(null);
   const [messageErrors, setMessageErrors] = useState(null);
   const { isLoaded, isSignedIn, user } = useUser();
@@ -62,13 +62,13 @@ export default function HomePage() {
   };
 
   return (
-    <div className="h-[100dvh] w-screen bg-dgreen flex flex-col items-center justify-end pt-20 pb-5 md:justify-center md:pb-0 md:pt-0 text-white">
+    <div className="h-[100dvh] w-screen bg-dgreen flex flex-col items-center justify-end pt-20 pb-5 md:justify-center md:pb-0 md:pt-0">
       {messageErrors && (
         <span className="absolute top-5 bg-red-600 p-5 px-10 rounded-full">
           {messageErrors}
         </span>
       )}
-      <div className="absolute top-2 start-0 w-screen flex justify-between px-3 md:px-12">
+      <div className="absolute top-2 start-0 w-screen flex justify-between px-3 md:px-12 text-white">
         <button
           className="hover:scale-110 hover:font-bold hover:text-lorange transition-colors duration-300"
           onClick={() => router.push('/')}>
@@ -109,25 +109,32 @@ export default function HomePage() {
             onSubmit={handleOnSubmit}
           />
         )}
-        {hasAddress === true && <Payment />}
+        {hasAddress === true && (
+          <Payment email={user?.primaryEmailAddress?.emailAddress} />
+        )}
       </main>
     </div>
   );
 }
 
-function Payment() {
+function Payment({ email }) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState(
+    JSON.parse(localStorage.getItem('cart')) || []
+  );
+  const [subtotal, setSubtotal] = useState(0);
+  const [total, setTotal] = useState(0);
 
   const handleCheckout = async () => {
     try {
       setLoading(true);
 
-      const items = [
-        { name: 'Item 1', amount: 1000, quantity: 1 },
-        { name: 'Item 2', amount: 2000, quantity: 2 },
-      ];
+      const itemsToPay = items.map(({ id, count }) => {
+        return { id, count };
+      });
 
-      const sessionId = await createCheckoutSession(items);
+      const sessionId = await createCheckoutSession(itemsToPay, email);
       const stripe = await getStripe();
 
       if (stripe) {
@@ -136,19 +143,238 @@ function Payment() {
     } catch (error) {
       console.error('Error during checkout:', error);
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000);
+    }
+  };
+
+  const handleSubTotal = (arr) => {
+    const sub = arr.reduce((acc, curr) => {
+      return curr.price * curr.count + acc;
+    }, 0);
+
+    setSubtotal(sub);
+  };
+
+  const handleSetLStorage = (currArr) => {
+    localStorage.setItem('cart', JSON.stringify(currArr));
+  };
+
+  const handleNotProducts = () => {
+    setTimeout(() => {
+      router.push('/');
+    }, 2000);
+  };
+
+  const handleTotal = (arr) => {
+    let items = 0;
+    const sub = arr.reduce((acc, curr) => {
+      items += curr.count;
+      return curr.price * curr.count + acc;
+    }, 0);
+
+    const iva = sub * 0.16;
+
+    let subtotal = sub + 600;
+
+    if (items > 5) {
+      subtotal += 600;
+    }
+
+    setTotal(subtotal + iva);
+  };
+
+  useEffect(() => {
+    if (items.length === 0) {
+      handleNotProducts();
+    }
+  }, [items]);
+
+  useEffect(() => {
+    handleSubTotal(items);
+    handleTotal(items);
+  }, [items]);
+
+  return (
+    <div className="text-slate-700 h-full w-full pb-2 flex flex-col justify-between items-start relative">
+      {loading && (
+        <div className="fixed z-20 top-0 start-0 w-full h-full flex justify-center items-center backdrop-blur-sm">
+          <Spinner />
+        </div>
+      )}
+      <h1 className="text-2xl font-bold">Productos</h1>
+      {items.length > 0 ? (
+        <Cart
+          items={items}
+          setItems={setItems}
+          subTotal={subtotal}
+          setSub={handleSubTotal}
+          setLocalStorage={handleSetLStorage}
+          handleNotProducts={handleNotProducts}
+          total={total}
+          setTotal={handleTotal}
+        />
+      ) : (
+        <h2 className="w-full text-center italic text-xl absolute top-1/2">
+          No hay productos por aquí...
+        </h2>
+      )}
+      <button
+        role="link"
+        onClick={handleCheckout}
+        disabled={loading}
+        className={`bg-dgreen text-white font-bold px-4 py-2 rounded hover:bg-dgreen-dark transition-colors w-full hover:bg-dgreen/90 ${
+          items.length > 0 ? 'block' : 'hidden'
+        }`}>
+        ¡Todo se ve bien!
+      </button>
+    </div>
+  );
+}
+
+function Cart({
+  items,
+  setItems,
+  subTotal,
+  setSub,
+  setLocalStorage,
+  handleNotProducts,
+  total,
+  setTotal,
+}) {
+  const handleRemoveProductToCart = (item) => {
+    const currCart = items.slice();
+    const indexToRemove = currCart.indexOf(item);
+
+    if (indexToRemove !== -1) {
+      currCart.splice(indexToRemove, 1);
+    }
+
+    setItems(currCart);
+
+    setLocalStorage(currCart);
+
+    if (currCart.length === 0) handleNotProducts();
+
+    setSub(currCart);
+    setTotal(currCart);
+  };
+
+  const handleChangeCount = (character, item) => {
+    const currCart = items.slice();
+    const indexToOperation = currCart.indexOf(item);
+
+    if (indexToOperation !== -1) {
+      if (character === '+') {
+        currCart[indexToOperation].count =
+          (currCart[indexToOperation].count || 0) + 1;
+      } else if (character === '-') {
+        currCart[indexToOperation].count =
+          (currCart[indexToOperation].count || 0) - 1;
+        if (currCart[indexToOperation].count <= 0) {
+          currCart.splice(indexToOperation, 1);
+        }
+      }
+
+      setItems(currCart);
+
+      setLocalStorage(currCart);
+
+      if (currCart.length === 0) handleNotProducts();
+
+      setSub(currCart);
+      setTotal(currCart);
     }
   };
 
   return (
-    <div>
-      <button
-        role="link"
-        onClick={handleCheckout}
-        disabled={loading}>
-        {loading ? 'Loading...' : 'Checkout'}
-      </button>
-    </div>
+    <>
+      <div
+        className="flex flex-col gap-4 p-5 overflow-y-auto scrollbar-custom py-12 relative"
+        style={{
+          scrollbarWidth: 'thin',
+        }}>
+        {items?.map((item) => {
+          const { id, name, price, images, count } = item;
+          return (
+            <div
+              key={`cart-${id}`}
+              className="items-center space-x-3 relative grid grid-cols-10 group/item md:rounded-3xl md:hover:bg-dorange/50 md:hover:text-white md:hover:font-bold">
+              <div className="col-span-1 group relative">
+                <Image
+                  src={images[0]}
+                  height={100}
+                  width={100}
+                  alt={name}
+                />
+                <Image
+                  src={images[0]}
+                  height={100}
+                  width={100}
+                  alt={name}
+                  className="hidden group-hover:block absolute top-0 scale-[2]"
+                />
+              </div>
+
+              <span className="truncate pe-3 col-span-3">{name}</span>
+
+              <span className="truncate pe-3 col-span-2 text-sm">
+                <span className="text-xs">$</span> {price} c/u
+              </span>
+
+              <div className="col-span-3 flex">
+                <button
+                  className="aspect-square text-2xl grow flex justify-center items-center group/characterSubs"
+                  onClick={() => handleChangeCount('-', item)}>
+                  <span className="group-hover/characterSubs:scale-150">-</span>
+                </button>
+                <span className="grow flex justify-center items-center">
+                  {count}
+                </span>
+                <button
+                  className="text-xl grow flex justify-center items-center group/characterAdd"
+                  onClick={() => handleChangeCount('+', item)}>
+                  <span className="group-hover/characterAdd:scale-150 aspect-square">
+                    +
+                  </span>
+                </button>
+              </div>
+
+              <button
+                onClick={() => handleRemoveProductToCart(item)}
+                className="col-span-1 md:invisible group-hover/item:visible w-full aspect-square flex justify-center items-center group/btn">
+                <p className="hidden md:group-hover/btn:block absolute -top-11 text-sm bg-gray-100/80 rounded-2xl p-3 text-slate-700 ">
+                  Borrar producto
+                </p>
+                <svg
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 14 14"
+                  className="size-2 group-hover/btn:size-4 transition-transform">
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                    className="md:stroke-white"
+                  />
+                </svg>
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      <div className="my-4 font-bold w-full text-end">
+        <h3 className="text-lg">Subtotal: $ {subTotal}</h3>
+        <h3 className="text-xl underline">
+          Total <span className="text-sm">(iva + envío)</span>: ${' '}
+          <span className="text-2xl">{total}</span>
+        </h3>
+      </div>
+    </>
   );
 }
 
@@ -276,7 +502,7 @@ function Address({ displayName, onSubmit }) {
       <button
         type="submit"
         className="bg-dgreen text-white px-4 py-2 rounded hover:bg-dgreen-dark transition-colors">
-        Pagar
+        Ir a pagar
       </button>
     </form>
   );

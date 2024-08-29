@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+'use client';
 
-export default function SuccessPage() {
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+export default function SuccessPage({ params }) {
   const router = useRouter();
-  const { session_id } = router.query;
+  const { session_id } = params;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -20,8 +22,9 @@ export default function SuccessPage() {
           });
 
           const result = await response.json();
+
           if (result.success) {
-            localStorage.removeItem('items');
+            localStorage.removeItem('cart');
             setLoading(false);
             setTimeout(() => {
               router.push('/');
@@ -50,9 +53,11 @@ export default function SuccessPage() {
   }
 
   return (
-    <div className="bg-green-500 text-white p-4">
+    <div className="h-screen w-screen flex flex-col justify-center items-center bg-green-500 text-white p-4 font-lucky">
       <h1 className="text-2xl">¡Pago exitoso!</h1>
-      <p>Tu pago ha sido procesado con éxito. Redirigiendo...</p>
+      <p>Tu pago ha sido procesado con éxito.</p>
+
+      <p>¡Revisa tu correo para acordar la entrega!</p>
     </div>
   );
 }

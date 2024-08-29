@@ -1,6 +1,13 @@
 'use server';
 
-import { getUserAddress, updateUserAddress } from '@/app/_lib/mongo/adapter';
+import {
+  getUserAddress,
+  updateUserAddress,
+  createOrder,
+} from '@/app/_lib/mongo/adapter';
+
+import SendEmail from '../_lib/resend/send-email';
+import Template from '../_lib/resend/templates/order-html';
 
 export async function getAddress(email) {
   const hasAddress = await getUserAddress(email);
@@ -18,25 +25,118 @@ export async function createAddress(email, address) {
   return true;
 }
 
-export async function createCheckoutSession(items) {
+const getFormattedDate = () => {
+  const now = new Date();
+  const options = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    timeZoneName: 'short',
+  };
+  return now.toLocaleDateString('es-ES', options);
+};
+
+const calculatePay = (products, items) => {
+  const totalItemsCount = items.reduce((acc, { count }) => acc + count, 0);
+  const totalPriceInCents = items.reduce((acc, { id, count }) => {
+    const currProd = products.find((product) => product.id === id);
+    if (!currProd) throw new Error('Un producto es inválido');
+
+    return acc + currProd.price * count;
+  }, 0);
+
+  const iva = totalPriceInCents * 0.16;
+
+  let shipment = 600;
+
+  if (totalItemsCount > 5) {
+    shipment += 600;
+  }
+
+  const itemsToPay = items.map(({ id, count }) => {
+    const currProd = products.find((product) => product.id === id);
+    if (!currProd) throw new Error('Un producto es inválido');
+
+    return {
+      name: currProd.name,
+      amount: currProd.price * 100,
+      quantity: count,
+      image: currProd.image[0],
+      price: currProd.price,
+    };
+  });
+
+  return {
+    shipmentCharge: shipment * 100,
+    ivaCharge: iva * 100,
+    items: itemsToPay,
+    total: totalPriceInCents + shipment + iva,
+  };
+};
+
+export async function createCheckoutSession(items, email) {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL}/api/checkout`,
+    const prb = [
       {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ items }),
+        id: '2',
+        name: 'prb1',
+        price: 200,
+        image: [
+          'https://th.bing.com/th/id/R.62325205054ee42cbd441c7036a7e3ec?rik=RHdJrVUP%2b%2b8klA&pid=ImgRaw&r=0',
+        ],
+      },
+      {
+        id: '3',
+        name: 'prb2',
+        price: 200,
+        image: [
+          'https://th.bing.com/th/id/R.62325205054ee42cbd441c7036a7e3ec?rik=RHdJrVUP%2b%2b8klA&pid=ImgRaw&r=0',
+        ],
+      },
+    ];
+
+    const payload = calculatePay(prb, items);
+
+    if (payload) {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SITE_URL}/api/checkout`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session');
       }
-    );
 
-    if (!response.ok) {
-      throw new Error('Failed to create checkout session');
+      const data = await response.json();
+
+      const order = await createOrder(
+        email,
+        items,
+        payload.total,
+        data.sessionId
+      );
+
+      if (order) {
+        const now = getFormattedDate();
+
+        await SendEmail(
+          [email],
+          `Detalles de tu compra | ${order}`,
+          Template(payload.items, payload.total, order, now)
+        );
+
+        return data.sessionId;
+      } else throw new Error('No se pudo crear la orden de pago');
     }
-
-    const data = await response.json();
-    return data.sessionId;
   } catch (error) {
     console.error('Error creating checkout session:', error);
     throw error;
