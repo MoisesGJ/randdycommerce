@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Luz from './Luz';
 
 export default function ShoppingCart({
   view,
@@ -86,22 +87,23 @@ export default function ShoppingCart({
           view
             ? 'translate-x-0 animate-fade-left animate-duration-200'
             : 'translate-x-full'
-        } fixed top-0 right-0 z-40 h-screen w-full md:w-1/2 p-4 overflow-y-auto bg-dorange text-white flex flex-col justify-between overflow-hidden md:rounded-s-xl`}
+        } fixed top-0 right-0 z-40 h-screen w-full md:w-1/2 p-4 overflow-y-hidden bg-dorange/50 text-white flex flex-col justify-between overflow-hidden md:rounded-s-xl`}
         tabIndex="-1"
         aria-labelledby="drawer-right-label">
+        <Luz className="absolute"></Luz>
         <h5 className="inline-flex items-center mb-4 text-4xl font-lucky">
           Tu carrito
         </h5>
         <button
           type="button"
           onClick={() => setView(false)}
-          className="text-white bg-transparent rounded-lg text-sm w-8 h-8 absolute top-2.5 end-8 inline-flex items-center justify-center">
+          className="text-white bg-transparent rounded-lg text-sm w-8 h-8 absolute top-2.5 end-8 inline-flex items-center justify-center z-50">
           Cerrar
           <span className="sr-only">Cerrar menú</span>
         </button>
 
         <div
-          className="flex flex-col gap-4 p-5 overflow-y-auto scrollbar-custom"
+          className="flex flex-col gap-4 p-5 overflow-y-auto scrollbar-custom z-10"
           style={{
             scrollbarWidth: 'thin',
           }}>
@@ -180,7 +182,7 @@ export default function ShoppingCart({
             </span>
           </div>
           <button
-            className="font-lucky text-xl bg-dgreen p-3 rounded-full absolute end-3 bottom-3 hover:animate-wiggle-more hover:animate-infinite"
+            className="font-lucky text-xl bg-dgreen p-3 rounded-full absolute end-3 bottom-3 hover:animate-wiggle-more hover:animate-infinite z-50"
             onClick={navigatePayment}>
             Ir a pagar
           </button>

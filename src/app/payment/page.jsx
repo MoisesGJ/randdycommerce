@@ -1,5 +1,5 @@
 'use client';
-
+import Luz from '@/components/Luz';
 import { useUser, SignOutButton } from '@clerk/nextjs';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -11,6 +11,7 @@ import getStripe from '../_lib/stripe';
 import { getAddress, createAddress, createCheckoutSession } from './actions';
 
 export default function PaymentPage() {
+  const [animacionActiva, setAnimacionActiva] = useState(true);
   const [hasAddress, setHasAddress] = useState(null);
   const [messageErrors, setMessageErrors] = useState(null);
   const { isLoaded, isSignedIn, user } = useUser();
@@ -62,19 +63,21 @@ export default function PaymentPage() {
   };
 
   return (
-    <div className="h-[100dvh] w-screen bg-dgreen flex flex-col items-center justify-end pt-20 pb-5 md:justify-center md:pb-0 md:pt-0">
+    <div className="h-[130dvh] md:h-[100dvh] w-screen flex flex-col items-center justify-center bg-cover bg-left-bottom lg:bg-center  bg-no-repeat  bg-[url('/fondo.png')] overflow-hidden relative pt-36 pb-5">
+      <Luz active={animacionActiva}></Luz>
+
       {messageErrors && (
         <span className="absolute top-5 bg-red-600 p-5 px-10 rounded-full">
           {messageErrors}
         </span>
       )}
-      <div className="absolute top-2 start-0 w-screen flex justify-between px-3 md:px-12 text-white">
+      <div className="absolute z-50 top-0 py-6 md:py-2 start-0 w-screen flex justify-between px-3 md:px-12 bg-gray-100/50 text-dgreen">
         <button
-          className="hover:scale-110 hover:font-bold hover:text-lorange transition-colors duration-300"
+          className="hover:scale-110 font-extrabold text-2xl  hover:font-bold hover:text-lorange transition-colors duration-300"
           onClick={() => router.push('/')}>
           Regresar a comprar
         </button>
-        <div className="flex justify-end items-center relative group/session">
+        <div className="flex z-50 justify-end items-center relative group/session">
           {user.hasImage && (
             <Image
               src={user.imageUrl}
@@ -84,7 +87,7 @@ export default function PaymentPage() {
               alt={`Imagen de usuario de ${user.firstName}`}
             />
           )}
-          <span>
+          <span className="font-extrabold text-2xl ">
             ¡Hola, <b>{user.firstName}</b>!
           </span>
           <SignOutButton>
@@ -101,7 +104,8 @@ export default function PaymentPage() {
           </div>
         </div>
       </div>
-      <main className="bg-oldwhite w-11/12 max-w-[900px] h-full md:h-[500px] rounded-2xl p-5 flex justify-center items-center">
+
+      <main className="w-11/12 max-w-[900px] h-full md:h-[500px] rounded-2xl p-5 flex justify-center items-center bg-oldwhite/50 relative z-20">
         {hasAddress === null && <Spinner />}
         {hasAddress === false && (
           <Address
@@ -405,7 +409,7 @@ function Address({ displayName, onSubmit }) {
             type="text"
             defaultValue={displayName}
             {...register('name', { required: 'El nombre es obligatorio' })}
-            className={`w-full p-2 border rounded ${
+            className={`w-full p-2 border rounded-[40px] ${
               errors.name ? 'border-red-500' : 'border-gray-300'
             }`}
           />
@@ -426,7 +430,7 @@ function Address({ displayName, onSubmit }) {
             {...register('address', {
               required: 'La dirección es obligatoria',
             })}
-            className={`w-full p-2 border rounded ${
+            className={`w-full p-2 border rounded-[40px] ${
               errors.address ? 'border-red-500' : 'border-gray-300'
             }`}
           />
@@ -447,7 +451,7 @@ function Address({ displayName, onSubmit }) {
             id="city"
             type="text"
             {...register('city', { required: 'La ciudad es obligatoria' })}
-            className={`w-full p-2 border rounded ${
+            className={`w-full p-2 border rounded-[40px] ${
               errors.city ? 'border-red-500' : 'border-gray-300'
             }`}
           />
@@ -472,7 +476,7 @@ function Address({ displayName, onSubmit }) {
                 message: 'El código postal debe ser solo números',
               },
             })}
-            className={`w-full p-2 border rounded ${
+            className={`w-full p-2 border rounded-[40px] ${
               errors.postalCode ? 'border-red-500' : 'border-gray-300'
             }`}
           />
@@ -494,7 +498,7 @@ function Address({ displayName, onSubmit }) {
             type="text"
             defaultValue="México"
             readOnly
-            className="w-full p-2 border rounded bg-gray-100 cursor-not-allowed font-bold"
+            className="w-full p-2 border rounded-[40px] bg-gray-100 cursor-not-allowed font-bold"
           />
         </div>
       </div>
