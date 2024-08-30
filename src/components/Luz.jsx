@@ -1,15 +1,14 @@
-import React from "react";
+import React from 'react';
 export default function Luz({ children, active }) {
   return (
-    <div className="relative z-20 min-h-screen m-0 p-0">
+    <div className="absolute z-10 min-h-screen m-0 p-0">
       <div className="flex absolute z-10 bg-transparent w-[100%] h-[100%]"></div>
       {children}
       <div
         id="contenedorLuz"
         className={`relative w-[100%] z-30 h-[100vh] overflow-hidden xl:justify-center align-bottom ${
-          active ? "active" : ""
-        }`}
-      >
+          active ? 'active' : ''
+        }`}>
         <div className="burbujas">
           <div className="burbuja"></div>
           <div className="burbujaDos"></div>

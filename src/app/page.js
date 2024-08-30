@@ -267,7 +267,7 @@ export default function Home() {
                         className="absolute top-1/2 start-1/2 transition -translate-x-1/2 -translate-y-1/2 z-0"
                       />
 
-                      <h2 className="text-4xl text-center w-full text-white">
+                      <h2 className="absolute top-3 start-0 text-4xl text-center w-full text-white truncate">
                         {name}
                       </h2>
                       {shoppingCart.some((product) => product.id === id) && (
