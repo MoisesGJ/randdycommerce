@@ -56,9 +56,9 @@ export async function getProducts() {
   try {
     const products = await db.collection('products').find().toArray();
 
-    const plainProducts = products.map((product) => ({
-      ...product,
-      id: product._id.toString(),
+    const plainProducts = products.map(({ _id, ...rest }) => ({
+      ...rest,
+      id: _id.toString(),
     }));
 
     return plainProducts;

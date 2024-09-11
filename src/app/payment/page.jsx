@@ -228,9 +228,8 @@ function Payment({ email }) {
         role="link"
         onClick={handleCheckout}
         disabled={loading}
-        className={`bg-dgreen text-white font-bold px-4 py-2 rounded hover:bg-dgreen-dark transition-colors w-full hover:bg-dgreen/90 ${
-          items.length > 0 ? 'block' : 'hidden'
-        }`}>
+        className={`bg-dgreen text-white font-bold px-4 py-2 rounded hover:bg-dgreen-dark transition-colors w-full hover:bg-dgreen/90 ${items.length > 0 ? 'block' : 'hidden'
+          }`}>
         ¡Todo se ve bien!
       </button>
     </div>
@@ -298,6 +297,7 @@ function Cart({
         className="flex flex-col gap-4 p-5 overflow-y-auto scrollbar-custom py-12 relative"
         style={{
           scrollbarWidth: 'thin',
+          scrollbarColor: '#ffff transparent',
         }}>
         {items?.map((item) => {
           const { id, name, price, images, count } = item;
@@ -409,9 +409,8 @@ function Address({ displayName, onSubmit }) {
             type="text"
             defaultValue={displayName}
             {...register('name', { required: 'El nombre es obligatorio' })}
-            className={`w-full p-2 border rounded-[40px] ${
-              errors.name ? 'border-red-500' : 'border-gray-300'
-            }`}
+            className={`w-full p-2 border rounded-[40px] ${errors.name ? 'border-red-500' : 'border-gray-300'
+              }`}
           />
           {errors.name && (
             <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
@@ -430,9 +429,8 @@ function Address({ displayName, onSubmit }) {
             {...register('address', {
               required: 'La dirección es obligatoria',
             })}
-            className={`w-full p-2 border rounded-[40px] ${
-              errors.address ? 'border-red-500' : 'border-gray-300'
-            }`}
+            className={`w-full p-2 border rounded-[40px] ${errors.address ? 'border-red-500' : 'border-gray-300'
+              }`}
           />
           {errors.address && (
             <p className="text-red-500 text-sm mt-1">
@@ -451,9 +449,8 @@ function Address({ displayName, onSubmit }) {
             id="city"
             type="text"
             {...register('city', { required: 'La ciudad es obligatoria' })}
-            className={`w-full p-2 border rounded-[40px] ${
-              errors.city ? 'border-red-500' : 'border-gray-300'
-            }`}
+            className={`w-full p-2 border rounded-[40px] ${errors.city ? 'border-red-500' : 'border-gray-300'
+              }`}
           />
           {errors.city && (
             <p className="text-red-500 text-sm mt-1">{errors.city.message}</p>
@@ -476,9 +473,8 @@ function Address({ displayName, onSubmit }) {
                 message: 'El código postal debe ser solo números',
               },
             })}
-            className={`w-full p-2 border rounded-[40px] ${
-              errors.postalCode ? 'border-red-500' : 'border-gray-300'
-            }`}
+            className={`w-full p-2 border rounded-[40px] ${errors.postalCode ? 'border-red-500' : 'border-gray-300'
+              }`}
           />
           {errors.postalCode && (
             <p className="text-red-500 text-sm mt-1">
