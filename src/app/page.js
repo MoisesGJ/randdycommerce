@@ -9,6 +9,7 @@ import { useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Products } from './actions';
+import Skeleton from '@/components/SkeletonBurbuja';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
@@ -137,7 +138,7 @@ export default function Home() {
     setCountItems(countItems);
   };
 
-  const handleRemoveRandy = async () => {};
+  const handleRemoveRandy = async () => { };
 
   const handlePayment = () => {
     router.push('/payment');
@@ -171,7 +172,7 @@ export default function Home() {
           <div className="holan"></div>
           <div className="holan"></div>
         </div>
-        <div className="flex">
+        <div className="flex px-3">
           <Image
             src="https://cdn.randomlandia.com/ecommerce/logoLarge.svg"
             width={300}
@@ -179,7 +180,7 @@ export default function Home() {
             alt="Logo largo de randomlandia"
             className="md:scale-150 pb-6 animate-fade-left"
           />
-          <h2 className="font-lucky pl-10 text-green-900 text-xl animate-fade-right hover:animate-jump">
+          <h2 className="hidden md:inline-block font-lucky pl-10 text-white text-xl animate-fade-right hover:animate-jump">
             Los mejores productos
           </h2>
         </div>
@@ -238,71 +239,63 @@ export default function Home() {
           </svg>
         </button>
         <section className="w-full flex flex-wrap justify-around items-center animate-fade-right">
+          {order.length < 1 && <Skeleton />}
           {order.map(
             (
               { id, name, description, price, stock, category, images },
               index
             ) => {
-              return (
-                <div>
-                  <BurbujaAdaptable
-                    id="burbuja2"
-                    className="h-[500px] w-[500px] ">
-                    <div
-                      key={`product-${id}`}
-                      className={`${index === 0 && 'hidden md:flex'} ${
-                        sliceStart ? 'animate-fade-right' : ''
-                      } ${
-                        index === 1 && 'h-[400px] w-[300px]'
-                      } hover:scale-105 h-[300px] w-56   rounded-2xl  transition-transform ease-in-out relative font-lucky p-3 ${
-                        index === 2 && 'hidden lg:flex'
-                      } ${
-                        sliceEnd ? 'animate-fade-left' : ''
-                      } animate-duration-200 group`}>
-                      <Image
-                        src={images[0]}
-                        height={200}
-                        width={200}
-                        alt={name}
-                        className="absolute top-1/2 start-1/2 transition -translate-x-1/2 -translate-y-1/2 z-0"
-                      />
 
-                      <h2 className="absolute top-3 start-0 text-4xl text-center w-full text-white truncate">
-                        {name}
-                      </h2>
-                      {shoppingCart.some((product) => product.id === id) && (
-                        <>
-                          <div className="absolute end-1/2 top-1/2 transition translate-x-1/2 -translate-y-1/2 backdrop-blur-sm h-36 w-36 rounded-full"></div>
-                          <span className="text-transparent bg-clip-text bg-dorange text-2xl text-center absolute end-1/2 top-1/2 transition translate-x-1/2 -translate-y-1/2 z-50">
-                            ¡Agregado al carrito!
-                          </span>
-                        </>
-                      )}
-                      <span
-                        className={`absolute bottom-3 start-1/2 transition -translate-x-1/2 text-dorange ${
-                          index === 1 ? 'text-4xl' : 'text-2xl'
-                        }`}>
-                        $ {price}
+              const isExistsInCart = shoppingCart.some((product) => product.id === id)
+
+              return (
+                <div
+                  id="burbuja2"
+                  key={`product-${id}`}
+                  className={`${index === 0 && 'hidden md:flex'} ${sliceStart ? 'animate-fade-right' : ''
+                    } ${index === 1 && 'md:size-[350px]'
+                    } hover:scale-105 size-[250px] md:size-[300px] rounded-2xl  transition-transform ease-in-out relative font-lucky p-3 ${index === 2 && 'hidden lg:flex'
+                    } ${sliceEnd ? 'animate-fade-left' : ''
+                    } animate-duration-200 group`}>
+                  <BurbujaAdaptable className='w-full h-full' />
+                  <Image
+                    src={images[0]}
+                    height={200}
+                    width={200}
+                    alt={name}
+                    className={`${isExistsInCart && 'blur-md drop-shadow-xl'} drop-shadow-2xl absolute top-1/2 start-1/2 transition -translate-x-1/2 -translate-y-1/2 z-0 scale-75 md:scale-100`}
+                  />
+
+                  <h2 className="absolute top-3 start-0 text-4xl text-center w-full text-white truncate">
+                    {name}
+                  </h2>
+                  {isExistsInCart && (
+                    <>
+                      <span className="text-dorange text-2xl text-center absolute end-1/2 top-1/2 transition translate-x-1/2 -translate-y-1/2 z-50">
+                        ¡Agregado al carrito!
                       </span>
-                      <button
-                        className="absolute start-5 bottom-3 group-hover:animate-wiggle-more group-hover:animate-infinite"
-                        onClick={() => handleAddCart(id)}>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                          className={`fill-dorange group-hover:scale-[1.5] ${
-                            index === 1 ? 'size-14' : 'size-12'
-                          }`}>
-                          <path
-                            fillRule="evenodd"
-                            d="M7.5 6v.75H5.513c-.96 0-1.764.724-1.865 1.679l-1.263 12A1.875 1.875 0 0 0 4.25 22.5h15.5a1.875 1.875 0 0 0 1.865-2.071l-1.263-12a1.875 1.875 0 0 0-1.865-1.679H16.5V6a4.5 4.5 0 1 0-9 0ZM12 3a3 3 0 0 0-3 3v.75h6V6a3 3 0 0 0-3-3Zm-3 8.25a3 3 0 1 0 6 0v-.75a.75.75 0 0 1 1.5 0v.75a4.5 4.5 0 1 1-9 0v-.75a.75.75 0 0 1 1.5 0v.75Z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </BurbujaAdaptable>
+                    </>
+                  )}
+                  <span
+                    className={`absolute bottom-3 start-1/2 transition -translate-x-1/2  text-dorange  drop-shadow-md filter brightness-110 text-2xl ${index === 1 ? 'md:text-5xl' : 'md:text-4xl'
+                      }`}>
+                    $ {price}
+                  </span>
+                  <button
+                    className="absolute start-[25%] md:start-[15%] bottom-3 group-hover:animate-wiggle-more group-hover:animate-infinite"
+                    onClick={() => handleAddCart(id)}>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      className={`fill-white group-hover:scale-[1.5] size-8 md:size-12`}>
+                      <path
+                        fillRule="evenodd"
+                        d="M7.5 6v.75H5.513c-.96 0-1.764.724-1.865 1.679l-1.263 12A1.875 1.875 0 0 0 4.25 22.5h15.5a1.875 1.875 0 0 0 1.865-2.071l-1.263-12a1.875 1.875 0 0 0-1.865-1.679H16.5V6a4.5 4.5 0 1 0-9 0ZM12 3a3 3 0 0 0-3 3v.75h6V6a3 3 0 0 0-3-3Zm-3 8.25a3 3 0 1 0 6 0v-.75a.75.75 0 0 1 1.5 0v.75a4.5 4.5 0 1 1-9 0v-.75a.75.75 0 0 1 1.5 0v.75Z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </button>
                 </div>
               );
             }
@@ -328,7 +321,8 @@ export default function Home() {
         </button>
       </main>
 
-      <footer className="font-lucky text-sm fixed bottom-3 start-1/2 transition -translate-x-1/2 hover:scale-125">
+      <footer className="font-lucky text-sm fixed bottom-3 start-1/2 transition -translate-x-1/2 hover:scale-125 backdrop-blur-md backdrop-opacity-100 text-dgreen p-2 rounded-3xl whitespace-nowrap">
+        <div className="absolute inset-0 -z-10 bg-white/65 rounded-full"></div>
         Visita{' '}
         <Link
           href={'https://randomlandia.com/'}
